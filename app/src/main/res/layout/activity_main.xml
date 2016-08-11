@@ -9,8 +9,40 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.trannh08.ad004savingdata_savingfiles.MainActivity">
 
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/inputString"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:hint="input something here" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Write Internal"
+        android:id="@+id/button_writeInternal"
+        android:layout_below="@+id/inputString"
+        android:layout_alignParentStart="true"
+        android:layout_alignEnd="@+id/inputString"
+        android:onClick="saveFile_internalStorage" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Write External"
+        android:id="@+id/button_writeExternal"
+        android:layout_below="@+id/button_writeInternal"
+        android:layout_alignEnd="@+id/button_writeInternal"
+        android:layout_alignParentStart="true" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:id="@+id/textView_output"
+        android:minLines="10"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
 </RelativeLayout>
