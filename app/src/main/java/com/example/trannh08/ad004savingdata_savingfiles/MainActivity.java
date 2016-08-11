@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         String filename = "mysecondfile";
         String outputString = ((EditText) findViewById(R.id.inputString)).getText().toString();
         File myDir = getFilesDir();
-
+        
         try {
             File secondFile = new File(myDir + "/text/", filename);
             if (secondFile.getParentFile().mkdirs()) {
