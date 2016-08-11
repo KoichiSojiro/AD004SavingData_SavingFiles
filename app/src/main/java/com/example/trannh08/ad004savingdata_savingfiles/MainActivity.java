@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void saveFile_internalStorage(View view) {
-        String filename = "myfile.txt";
+        String filename = "myFile.txt";
         String outputString = ((EditText) findViewById(R.id.inputString)).getText().toString();
         FileOutputStream outputStream;
 
@@ -52,10 +52,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void saveFile_internalStorage2(View view)
     {
-        String filename = "mysecondfile";
+        String filename = "mySecondFile.txt";
         String outputString = ((EditText) findViewById(R.id.inputString)).getText().toString();
         File myDir = getFilesDir();
-        
+
         try {
             File secondFile = new File(myDir + "/text/", filename);
             if (secondFile.getParentFile().mkdirs()) {
