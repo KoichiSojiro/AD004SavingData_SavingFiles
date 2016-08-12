@@ -33,9 +33,7 @@ public class MainActivity extends AppCompatActivity {
         //checkExternalMedia();
         //writeToSDFile();
         //readRaw();
-
-
-
+        
         writeSimpleText();
     }
 
