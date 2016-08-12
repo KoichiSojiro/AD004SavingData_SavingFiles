@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
         //writeToSDFile();
         //readRaw();
 
+
+
         writeSimpleText();
     }
 
