@@ -29,13 +29,30 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        myTextView = (TextView) findViewById(R.id.textView_output);
-        checkExternalMedia();
-        writeToSDFile();
+        //myTextView = (TextView) findViewById(R.id.textView_output);
+        //checkExternalMedia();
+        //writeToSDFile();
         //readRaw();
+
+        writeSimpleText();
     }
 
-    public void saveFile_internalStorage(View view) {
+    public void writeSimpleText() {
+        String fileName = "myFile.txt";
+
+        try {
+            File f = new File(getFilesDir(), fileName);
+            FileOutputStream fos = openFileOutput(fileName, Context.MODE_PRIVATE);
+            String s = "ABC";
+            fos.write(s.getBytes());
+            fos.flush();
+            fos.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void saveFile_internalStorage2(View view) {
         String filename = "myFile.txt";
         String outputString = ((EditText) findViewById(R.id.inputString)).getText().toString();
         FileOutputStream outputStream;
@@ -47,18 +64,17 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        saveFile_internalStorage2(view);
     }
+    
 
-    public void saveFile_internalStorage2(View view)
+    public void saveFile_internalStorage(View view)
     {
         String filename = "mySecondFile.txt";
         String outputString = ((EditText) findViewById(R.id.inputString)).getText().toString();
         File myDir = getFilesDir();
 
         try {
-            File secondFile = new File(myDir + "/text/", filename);
+            File secondFile = new File(myDir, filename);
             if (secondFile.getParentFile().mkdirs()) {
                 secondFile.createNewFile();
                 FileOutputStream fos = new FileOutputStream(secondFile);
