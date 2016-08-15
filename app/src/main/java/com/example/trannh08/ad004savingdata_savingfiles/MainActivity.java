@@ -1,7 +1,6 @@
 package com.example.trannh08.ad004savingdata_savingfiles;
 
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -10,19 +9,20 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MEDIA";
     private TextView myTextView;
+
+    private final String subFolder = "testFiles";
+    private final String fileName = "myFile.txt";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,61 +33,46 @@ public class MainActivity extends AppCompatActivity {
         //checkExternalMedia();
         //writeToSDFile();
         //readRaw();
-        
-        writeSimpleText();
     }
 
-    public void writeSimpleText() {
-        String fileName = "myFile.txt";
-
+    public void saveFile_internalStorage(View view) {
         try {
-            File f = new File(getFilesDir(), fileName);
-            FileOutputStream fos = openFileOutput(fileName, Context.MODE_PRIVATE);
-            String s = "ABC";
-            fos.write(s.getBytes());
-            fos.flush();
-            fos.close();
-        } catch (IOException ex) {
+            File myFile = new File(getFilesDir() + "/" + subFolder);
+            myFile.mkdirs();
+            File myOutputFile = new File(myFile, fileName);
+            FileOutputStream myFileOutputStream = new FileOutputStream(myOutputFile);
+
+            String outputString = ((EditText) findViewById(R.id.inputString)).getText().toString();
+            myFileOutputStream.write(outputString.getBytes());
+            myFileOutputStream.flush();
+            myFileOutputStream.close();
+
+            Log.d("Success", "saveFile_internalStorage");
+        } catch (Exception ex) {
             ex.printStackTrace();
+            Log.d("Error", ex.getStackTrace().toString());
         }
     }
 
-    public void saveFile_internalStorage2(View view) {
-        String filename = "myFile.txt";
-        String outputString = ((EditText) findViewById(R.id.inputString)).getText().toString();
-        FileOutputStream outputStream;
-
+    public void readFile_internalStorage(View view) {
         try {
-            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(outputString.getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
+            FileInputStream myFileInputStream = new FileInputStream(getFilesDir() + "/" + subFolder + "/" + fileName);
 
-    public void saveFile_internalStorage(View view)
-    {
-        String filename = "mySecondFile.txt";
-        String outputString = ((EditText) findViewById(R.id.inputString)).getText().toString();
-        File myDir = getFilesDir();
-
-        try {
-            File secondFile = new File(myDir, filename);
-            if (secondFile.getParentFile().mkdirs()) {
-                secondFile.createNewFile();
-                FileOutputStream fos = new FileOutputStream(secondFile);
-
-                fos.write(outputString.getBytes());
-                fos.flush();
-                fos.close();
+            StringBuilder myStringBuilder = new StringBuilder();
+            int totalChars;
+            while ((totalChars = myFileInputStream.read()) != -1) {
+                myStringBuilder.append((char) totalChars);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            TextView myTextView = (TextView) findViewById(R.id.textView_output);
+            myTextView.setText(myStringBuilder);
+
+            Log.d("Success", "readFile_internalStorage");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.d("Error", ex.getStackTrace().toString());
         }
     }
-
 
     private void checkExternalMedia() {
         boolean mExternalStorageAvailable = false;

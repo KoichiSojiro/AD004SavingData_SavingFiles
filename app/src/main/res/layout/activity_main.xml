@@ -10,39 +10,60 @@
     tools:context="com.example.trannh08.ad004savingdata_savingfiles.MainActivity">
 
     <EditText
+        android:id="@+id/inputString"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/inputString"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
         android:hint="input something here" />
 
     <Button
+        android:id="@+id/button_writeInternal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Write Internal"
-        android:id="@+id/button_writeInternal"
+        android:layout_alignParentLeft="true"
         android:layout_below="@+id/inputString"
-        android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/inputString"
-        android:onClick="saveFile_internalStorage" />
+        android:layout_toLeftOf="@+id/button_readExternal"
+        android:layout_toStartOf="@+id/button_readExternal"
+        android:onClick="saveFile_internalStorage"
+        android:text="Write Internal" />
 
     <Button
+        android:id="@+id/button_writeExternal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Write External"
-        android:id="@+id/button_writeExternal"
-        android:layout_below="@+id/button_writeInternal"
         android:layout_alignEnd="@+id/button_writeInternal"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/button_writeInternal"
+        android:layout_below="@+id/button_writeInternal"
+        android:text="Write External" />
+
+    <Button
+        android:id="@+id/button_readInternal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button_writeExternal"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:onClick="readFile_internalStorage"
+        android:text="Read Internal" />
+
+    <Button
+        android:id="@+id/button_readExternal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/button_readInternal"
+        android:layout_alignRight="@+id/button_readInternal"
+        android:layout_below="@+id/button_readInternal"
+        android:text="Read External" />
 
     <TextView
+        android:id="@+id/textView_output"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textView_output"
-        android:minLines="10"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true" />
+        android:minLines="10" />
 </RelativeLayout>
