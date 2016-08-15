@@ -17,12 +17,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class MainActivity extends AppCompatActivity {
-
-    private static final String TAG = "MEDIA";
-    private TextView myTextView;
-
     private final String subFolder = "testFiles";
     private final String fileName = "myFile.txt";
+
+    TextView myTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,9 +31,11 @@ public class MainActivity extends AppCompatActivity {
         //checkExternalMedia();
         //writeToSDFile();
         //readRaw();
+
+        myTextView = (TextView) findViewById(R.id.textView_output);
     }
 
-    public void saveFile_internalStorage(View view) {
+    public void writeFile_internalStorage(View view) {
         try {
             File myFile = new File(getFilesDir() + "/" + subFolder);
             myFile.mkdirs();
@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
             FileOutputStream myFileOutputStream = new FileOutputStream(myOutputFile);
 
             String outputString = ((EditText) findViewById(R.id.inputString)).getText().toString();
+            outputString = "This is a sample of writing file to internal storage\n" + outputString;
             myFileOutputStream.write(outputString.getBytes());
             myFileOutputStream.flush();
             myFileOutputStream.close();
@@ -57,14 +58,11 @@ public class MainActivity extends AppCompatActivity {
     public void readFile_internalStorage(View view) {
         try {
             FileInputStream myFileInputStream = new FileInputStream(getFilesDir() + "/" + subFolder + "/" + fileName);
-
             StringBuilder myStringBuilder = new StringBuilder();
             int totalChars;
             while ((totalChars = myFileInputStream.read()) != -1) {
                 myStringBuilder.append((char) totalChars);
             }
-
-            TextView myTextView = (TextView) findViewById(R.id.textView_output);
             myTextView.setText(myStringBuilder);
 
             Log.d("Success", "readFile_internalStorage");
@@ -74,9 +72,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void checkExternalMedia() {
-        boolean mExternalStorageAvailable = false;
-        boolean mExternalStorageWritable = false;
+    private boolean checkExternalMedia() {
+        boolean mExternalStorageAvailable;
+        boolean mExternalStorageWritable;
         String state = Environment.getExternalStorageState();
 
         if (Environment.MEDIA_MOUNTED.equals(state)) {
@@ -90,40 +88,46 @@ public class MainActivity extends AppCompatActivity {
             // Can't read or write
             mExternalStorageAvailable = mExternalStorageWritable = false;
         }
-        myTextView.append("\n\nExternal Media: readable="
-                + mExternalStorageAvailable + " writable=" + mExternalStorageWritable);
+
+        myTextView.setText("External Media: readable=" + mExternalStorageAvailable
+                + " writable=" + mExternalStorageWritable);
+
+        if(mExternalStorageAvailable == mExternalStorageWritable == true)
+            return true;
+        else return false;
     }
 
-    private void writeToSDFile() {
+    public void writeFile_externalStorage(View view) {
+        if(!checkExternalMedia()) return;
 
         // Find the root of the external storage.
-        // See http://developer.android.com/guide/topics/data/data-  storage.html#filesExternal
-
         File root = android.os.Environment.getExternalStorageDirectory();
         myTextView.append("\nExternal file system root: " + root);
 
-        // See http://stackoverflow.com/questions/3551821/android-write-to-sd-card-folder
-
-        File dir = new File(root.getAbsolutePath() + "/download");
+        //File dir = new File(root.getAbsolutePath() + "/" + subFolder);
+        File dir = new File(root.getAbsolutePath());
         dir.mkdirs();
-        File file = new File(dir, "myData.txt");
+        File file = new File(dir, fileName);
+        String outputString = ((EditText) findViewById(R.id.inputString)).getText().toString();
 
         try {
-            FileOutputStream f = new FileOutputStream(file);
-            PrintWriter pw = new PrintWriter(f);
-            pw.println("Hi , How are you");
-            pw.println("Hello");
-            pw.flush();
-            pw.close();
-            f.close();
+            FileOutputStream myFileOutputStream = new FileOutputStream(file);
+            PrintWriter myPrintWriter = new PrintWriter(myFileOutputStream);
+            myPrintWriter.println("This is a sample of writing file to external storage");
+            myPrintWriter.println(outputString);
+            myPrintWriter.flush();
+            myPrintWriter.close();
+            myFileOutputStream.close();
+
+            Log.d("Success", "writeFile_externalStorage");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            Log.i(TAG, "******* File not found. Did you" +
-                    " add a WRITE_EXTERNAL_STORAGE permission to the  manifest?");
+            Log.d("Error", "******* File not found. Did you" +
+                    " add a WRITE_EXTERNAL_STORAGE permission to the manifest?");
         } catch (IOException e) {
             e.printStackTrace();
+            Log.d("Error", e.getStackTrace().toString());
         }
-        myTextView.append("\n\nFile written to " + file);
     }
 
     /**

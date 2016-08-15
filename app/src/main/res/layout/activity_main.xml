@@ -26,7 +26,7 @@
         android:layout_below="@+id/inputString"
         android:layout_toLeftOf="@+id/button_readExternal"
         android:layout_toStartOf="@+id/button_readExternal"
-        android:onClick="saveFile_internalStorage"
+        android:onClick="writeFile_internalStorage"
         android:text="Write Internal" />
 
     <Button
@@ -37,6 +37,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignRight="@+id/button_writeInternal"
         android:layout_below="@+id/button_writeInternal"
+        android:onClick="writeFile_externalStorage"
         android:text="Write External" />
 
     <Button
@@ -56,6 +57,7 @@
         android:layout_alignEnd="@+id/button_readInternal"
         android:layout_alignRight="@+id/button_readInternal"
         android:layout_below="@+id/button_readInternal"
+        android:onClick="readFile_externalStorage"
         android:text="Read External" />
 
     <TextView
