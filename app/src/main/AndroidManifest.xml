@@ -3,7 +3,7 @@
     package="com.example.trannh08.ad004savingdata_savingfiles">
 
     <!--allow the program to read and write to external storage-->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application

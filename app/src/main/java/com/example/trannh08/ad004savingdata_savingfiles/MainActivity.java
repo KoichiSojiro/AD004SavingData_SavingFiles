@@ -8,18 +8,22 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 public class MainActivity extends AppCompatActivity {
     private final String subFolder = "testFiles";
     private final String fileName = "myFile.txt";
 
+    EditText myEditText;
     TextView myTextView;
 
     @Override
@@ -27,28 +31,27 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //myTextView = (TextView) findViewById(R.id.textView_output);
-        //checkExternalMedia();
-        //writeToSDFile();
-        //readRaw();
-
+        myEditText = (EditText) findViewById(R.id.inputString);
         myTextView = (TextView) findViewById(R.id.textView_output);
     }
 
     public void writeFile_internalStorage(View view) {
         try {
-            File myFile = new File(getFilesDir() + "/" + subFolder);
-            myFile.mkdirs();
-            File myOutputFile = new File(myFile, fileName);
-            FileOutputStream myFileOutputStream = new FileOutputStream(myOutputFile);
+            File dir = new File(getFilesDir() + "/" + subFolder);
+            dir.mkdirs();
+            File file = new File(dir, fileName);
+            FileOutputStream myFileOutputStream = new FileOutputStream(file);
 
-            String outputString = ((EditText) findViewById(R.id.inputString)).getText().toString();
+            String outputString = myEditText.getText().toString();
             outputString = "This is a sample of writing file to internal storage\n" + outputString;
             myFileOutputStream.write(outputString.getBytes());
-            myFileOutputStream.flush();
             myFileOutputStream.close();
 
-            Log.d("Success", "saveFile_internalStorage");
+            Toast.makeText(getApplicationContext(), "Message saved to Phone Storage via " + file.getAbsoluteFile(), Toast.LENGTH_LONG).show();
+        }catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         } catch (Exception ex) {
             ex.printStackTrace();
             Log.d("Error", ex.getStackTrace().toString());
@@ -57,15 +60,20 @@ public class MainActivity extends AppCompatActivity {
 
     public void readFile_internalStorage(View view) {
         try {
-            FileInputStream myFileInputStream = new FileInputStream(getFilesDir() + "/" + subFolder + "/" + fileName);
-            StringBuilder myStringBuilder = new StringBuilder();
+            File dir = new File(getFilesDir() + "/" + subFolder);
+            File file = new File(dir, fileName);
+            FileInputStream fileInputStream = new FileInputStream(file);
+            StringBuilder stringBuilder = new StringBuilder();
             int totalChars;
-            while ((totalChars = myFileInputStream.read()) != -1) {
-                myStringBuilder.append((char) totalChars);
+            while ((totalChars = fileInputStream.read()) != -1) {
+                stringBuilder.append((char) totalChars);
             }
-            myTextView.setText(myStringBuilder);
-
-            Log.d("Success", "readFile_internalStorage");
+            myTextView.setText(stringBuilder);
+            Toast.makeText(getApplicationContext(), "Loaded message from Phone Storage via " + file.getAbsoluteFile(), Toast.LENGTH_LONG).show();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         } catch (Exception ex) {
             ex.printStackTrace();
             Log.d("Error", ex.getStackTrace().toString());
@@ -92,73 +100,123 @@ public class MainActivity extends AppCompatActivity {
         myTextView.setText("External Media: readable=" + mExternalStorageAvailable
                 + " writable=" + mExternalStorageWritable);
 
-        if(mExternalStorageAvailable == mExternalStorageWritable == true)
+        if (mExternalStorageAvailable == mExternalStorageWritable == true)
             return true;
         else return false;
     }
 
     public void writeFile_externalStorage(View view) {
-        if(!checkExternalMedia()) return;
+        if (checkExternalMedia()) {
+            try {
+                File root = Environment.getExternalStorageDirectory();
+                File dir = new File(root.getAbsolutePath() + "/" + subFolder);
+                if (!dir.exists())
+                    dir.mkdirs();
+                File file = new File(dir, fileName);
+                EditText editText = (EditText) findViewById(R.id.inputString);
+                String message = editText.getText().toString();
+                FileOutputStream fileOutputStream = new FileOutputStream(file);
+                /*
+                * This block using pure FileOutputStream
+                * */
+                //fileOutputStream.write(message.getBytes());
+                //fileOutputStream.close();
 
-        // Find the root of the external storage.
-        File root = android.os.Environment.getExternalStorageDirectory();
-        myTextView.append("\nExternal file system root: " + root);
+                /*
+                * This block using pure PrintWriter
+                * */
+                PrintWriter printWriter = new PrintWriter(fileOutputStream);
+                printWriter.println("This is a sample of writing file to external storage");
+                printWriter.println(message);
+                printWriter.close();
+                fileOutputStream.close();
 
-        //File dir = new File(root.getAbsolutePath() + "/" + subFolder);
-        File dir = new File(root.getAbsolutePath());
-        dir.mkdirs();
-        File file = new File(dir, fileName);
-        String outputString = ((EditText) findViewById(R.id.inputString)).getText().toString();
-
-        try {
-            FileOutputStream myFileOutputStream = new FileOutputStream(file);
-            PrintWriter myPrintWriter = new PrintWriter(myFileOutputStream);
-            myPrintWriter.println("This is a sample of writing file to external storage");
-            myPrintWriter.println(outputString);
-            myPrintWriter.flush();
-            myPrintWriter.close();
-            myFileOutputStream.close();
-
-            Log.d("Success", "writeFile_externalStorage");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            Log.d("Error", "******* File not found. Did you" +
-                    " add a WRITE_EXTERNAL_STORAGE permission to the manifest?");
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.d("Error", e.getStackTrace().toString());
+                Toast.makeText(getApplicationContext(), "Message saved to SD Card via " + file.getAbsoluteFile(), Toast.LENGTH_LONG).show();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Log.d("Error", ex.getStackTrace().toString());
+            }
+        } else {
+            Toast.makeText(getApplicationContext(), "SD Card not found", Toast.LENGTH_LONG).show();
         }
     }
 
-    /**
-     * Method to read in a text file placed in the res/raw directory of the application. The
-     * method reads in all lines of the file sequentially.
-     */
+    public void readFile_externalStorage(View view) {
+        try {
+            File root = Environment.getExternalStorageDirectory();
+            File dir = new File(root.getAbsolutePath() + "/" + subFolder);
+            File file = new File(dir, fileName);
+            FileInputStream fileInputStream = new FileInputStream(file);
 
-//    private void readRaw() {
-//        myTextView.append("\nData read from res/raw/textfile.txt:");
-//        InputStream is = this.getResources().openRawResource(R.raw.textfile);
-//        InputStreamReader isr = new InputStreamReader(is);
-//        BufferedReader br = new BufferedReader(isr, 8192);    // 2nd arg is buffer size
-//
-//        // More efficient (less readable) implementation of above is the composite expression
-//    /*BufferedReader br = new BufferedReader(new InputStreamReader(
-//            this.getResources().openRawResource(R.raw.textfile)), 8192);*/
-//
-//        try {
-//            String test;
-//            while (true) {
-//                test = br.readLine();
-//                // readLine() returns null if no more lines in the file
-//                if (test == null) break;
-//                myTextView.append("\n" + "    " + test);
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            StringBuffer stringBuffer = new StringBuffer();
+            String message;
+            while ((message = bufferedReader.readLine()) != null) {
+                stringBuffer.append(message + "\n");
+            }
+            bufferedReader.close();
+            myTextView.setText(message.toString());
+
+//            StringBuilder myStringBuilder = new StringBuilder();
+//            int totalChars;
+//            while ((totalChars = fileInputStream.read()) != -1) {
+//                myStringBuilder.append((char) totalChars);
 //            }
-//            isr.close();
-//            is.close();
-//            br.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        myTextView.append("\n\nThat is all");
-//    }
+//            myTextView.setText(myStringBuilder);
+            Toast.makeText(getApplicationContext(), "Loaded message from SD Card via " + file.getAbsoluteFile(), Toast.LENGTH_LONG).show();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.d("Error", ex.getStackTrace().toString());
+        }
+    }
+
+
+    //Internal Storage
+    public void writeMessage_toInternalStorage(View view) {
+        EditText editText = (EditText) findViewById(R.id.inputString);
+        String message = editText.getText().toString();
+        try {
+            FileOutputStream fileOutputStream = openFileOutput(fileName, MODE_PRIVATE);
+            fileOutputStream.write(message.getBytes());
+            fileOutputStream.close();
+            Toast.makeText(getApplicationContext(), "Message saved", Toast.LENGTH_LONG).show();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //Internal Storage
+    public void readMessage_fromInternalStorage(View view) {
+        try {
+            FileInputStream fileInputStream = openFileInput(fileName);
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            StringBuffer stringBuffer = new StringBuffer();
+            String message;
+            while ((message = bufferedReader.readLine()) != null) {
+                stringBuffer.append(message + "\n");
+            }
+            TextView textView = (TextView) findViewById(R.id.textView_output);
+            textView.setText(stringBuffer.toString());
+            textView.setVisibility(View.VISIBLE);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 }
