@@ -38,13 +38,25 @@ public class MainActivity extends AppCompatActivity {
 
         myEditText = (EditText) findViewById(R.id.inputString);
         myTextView = (TextView) findViewById(R.id.textView_output);
+
+        //asking for External Storage permission
+        if(!checkExternalStorage_Permission_API23()) {
+            askExternalStorage_Permission_API23();
+        }
     }
 
+    /**
+     * Override the onRequestPermissionsResult() method
+     * Just for displaying Toast and notification after user making decision (Deny/Allow)
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if(requestCode == REQUEST_EXTERNAL_STORAGE) {
             if(grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission was not granted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Permission to use SD Card was not granted", Toast.LENGTH_SHORT).show();
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -52,7 +64,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Write simple text to file and save to Internal Storage
+     * @param view
+     */
     public void writeFile_internalStorage(View view) {
         try {
             File dir = new File(getFilesDir() + "/" + subFolder);
@@ -76,6 +91,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Read simple text from file saved in Internal Storage
+     * @param view
+     */
     public void readFile_internalStorage(View view) {
         try {
             File dir = new File(getFilesDir() + "/" + subFolder);
@@ -103,6 +122,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Check whether SD Card is available and accessible
+     * Using for API level 22 and below
+     * @param
+     */
     private boolean checkExternalStorage_Available() {
         boolean mExternalStorageAvailable = false;
         boolean mExternalStorageWritable = false;
@@ -127,6 +151,12 @@ public class MainActivity extends AppCompatActivity {
             return true;
         else return false;
     }
+
+    /**
+     * Check whether SD Card is available and accessible
+     * Using for API level 23 and above
+     * @param
+     */
     private boolean checkExternalStorage_Permission_API23() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -139,6 +169,13 @@ public class MainActivity extends AppCompatActivity {
             return checkExternalStorage_Available();
         }
     }
+
+    /**
+     * If SD Card is NOT available and accessible
+     * Ask for permission
+     * Using for API level 23 and above
+     * @param
+     */
     private void askExternalStorage_Permission_API23() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -149,20 +186,23 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    /**
+     * Write simple text to file and save to External Storage
+     * @param view
+     */
     public void writeFile_externalStorage(View view) {
         if(checkExternalStorage_Permission_API23()) {
-            //ok to use SD Card
             writeFile();
         } else {
-            askExternalStorage_Permission_API23();
-            if(checkExternalStorage_Permission_API23()) {
-                //ok to use SD Card
-                writeFile();
-            } else {
-                Toast.makeText(getApplicationContext(), "SD Card not found", Toast.LENGTH_LONG).show();
-            }
+            Toast.makeText(getApplicationContext(), "SD Card not found", Toast.LENGTH_LONG).show();
         }
     }
+
+    /**
+     * Writing method
+     * @param
+     */
     private void writeFile() {
         try {
             File root = Environment.getExternalStorageDirectory();
@@ -201,6 +241,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Read simple text from file saved in External Storage
+     * @param view
+     */
     public void readFile_externalStorage(View view) {
         try {
             File root = Environment.getExternalStorageDirectory();
