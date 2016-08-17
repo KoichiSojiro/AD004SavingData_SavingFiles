@@ -38,15 +38,12 @@ public class MainActivity extends AppCompatActivity {
 
         myEditText = (EditText) findViewById(R.id.inputString);
         myTextView = (TextView) findViewById(R.id.textView_output);
-        checkExternalStorage_Permission();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if(requestCode == REQUEST_EXTERNAL_STORAGE) {
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                //showCameraPreview();
-            } else {
+            if(grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Permission was not granted", Toast.LENGTH_SHORT).show();
             }
         } else {
@@ -107,8 +104,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkExternalStorage_Available() {
-        boolean mExternalStorageAvailable;
-        boolean mExternalStorageWritable;
+        boolean mExternalStorageAvailable = false;
+        boolean mExternalStorageWritable = false;
         String state = Environment.getExternalStorageState();
 
         if (Environment.MEDIA_MOUNTED.equals(state)) {
@@ -123,28 +120,14 @@ public class MainActivity extends AppCompatActivity {
             mExternalStorageAvailable = mExternalStorageWritable = false;
         }
 
-        myTextView.setText("External Media: readable=" + mExternalStorageAvailable
-                + " writable=" + mExternalStorageWritable);
+        Toast.makeText(getApplicationContext(), "External Media: readable=" + mExternalStorageAvailable
+                + " writable=" + mExternalStorageWritable, Toast.LENGTH_SHORT).show();
 
         if (mExternalStorageAvailable == mExternalStorageWritable == true)
             return true;
         else return false;
     }
-    private void askExternalStorage_Permission() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                //it's ok, return
-            }
-            else {
-                if(shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    Toast.makeText(this, "External Storage permission is needed", Toast.LENGTH_SHORT).show();
-                }
-                //request External Storage permission
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE);
-            }
-        }
-    }
-    private boolean checkExternalStorage_Permission() {
+    private boolean checkExternalStorage_Permission_API23() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 return true;
@@ -153,55 +136,68 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             //handling permission if API < 23
-            return true;
+            return checkExternalStorage_Available();
         }
     }
-
-    public void writeFile_externalStorage(View view) {
-//        if(checkExternalStorage_Permission()) {
-//            //ok to use SD Card
-//        } else {
-//            askExternalStorage_Permission();
-//            //then recheck permission
-//        }
-
-        if (checkExternalStorage_Available()) {
-            try {
-                File root = Environment.getExternalStorageDirectory();
-                File dir = new File(root.getAbsolutePath() + "/" + subFolder);
-                if (!dir.exists())
-                    dir.mkdirs();
-                File file = new File(dir, fileName);
-                EditText editText = (EditText) findViewById(R.id.inputString);
-                String message = editText.getText().toString();
-                FileOutputStream fileOutputStream = new FileOutputStream(file);
-
-                /**
-                 * This block using FileReader + BufferedReader
-                 */
-                //fileOutputStream.write(message.getBytes());
-                //fileOutputStream.close();
-
-                /**
-                 * This block using FileReader + PrintWriter
-                 */
-                PrintWriter printWriter = new PrintWriter(fileOutputStream);
-                printWriter.println("This is a sample of writing file to external storage");
-                printWriter.println(message);
-                printWriter.close();
-                fileOutputStream.close();
-
-                Toast.makeText(getApplicationContext(), "Message saved to SD Card via " + file.getAbsoluteFile(), Toast.LENGTH_LONG).show();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                Log.d("Error", ex.getStackTrace().toString());
+    private void askExternalStorage_Permission_API23() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if(shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    Toast.makeText(this, "External Storage permission is needed", Toast.LENGTH_SHORT).show();
+                }
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE);
             }
+        }
+    }
+    public void writeFile_externalStorage(View view) {
+        if(checkExternalStorage_Permission_API23()) {
+            //ok to use SD Card
+            writeFile();
         } else {
-            Toast.makeText(getApplicationContext(), "SD Card not found", Toast.LENGTH_LONG).show();
+            askExternalStorage_Permission_API23();
+            if(checkExternalStorage_Permission_API23()) {
+                //ok to use SD Card
+                writeFile();
+            } else {
+                Toast.makeText(getApplicationContext(), "SD Card not found", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+    private void writeFile() {
+        try {
+            File root = Environment.getExternalStorageDirectory();
+            File dir = new File(root.getAbsolutePath() + "/" + subFolder);
+            if (!dir.exists())
+                dir.mkdirs();
+            File file = new File(dir, fileName);
+            EditText editText = (EditText) findViewById(R.id.inputString);
+            String message = editText.getText().toString();
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+            /**
+             * This block using FileReader + BufferedReader
+             */
+            //fileOutputStream.write(message.getBytes());
+            //fileOutputStream.close();
+
+            /**
+             * This block using FileReader + PrintWriter
+             */
+            PrintWriter printWriter = new PrintWriter(fileOutputStream);
+            printWriter.println("This is a sample of writing file to external storage");
+            printWriter.println(message);
+            printWriter.close();
+            fileOutputStream.close();
+
+            Toast.makeText(getApplicationContext(), "Message saved to SD Card via "
+                    + file.getAbsoluteFile(), Toast.LENGTH_LONG).show();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.d("Error", ex.getStackTrace().toString());
         }
     }
 
@@ -234,35 +230,4 @@ public class MainActivity extends AppCompatActivity {
             Log.d("Error", ex.getStackTrace().toString());
         }
     }
-
-
-
-
-//    private  final String TAG = "check permission";
-//    public  boolean isStoragePermissionGranted() {
-//        if (Build.VERSION.SDK_INT >= 23) {
-//            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//                    == PackageManager.PERMISSION_GRANTED) {
-//                Log.v(TAG,"Permission is granted");
-//                return true;
-//            } else {
-//
-//                Log.v(TAG,"Permission is revoked");
-//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-//                return false;
-//            }
-//        }
-//        else { //permission is automatically granted on sdk<23 upon installation
-//            Log.v(TAG,"Permission is granted");
-//            return true;
-//        }
-//    }
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        if(grantResults[0]== PackageManager.PERMISSION_GRANTED){
-//            Log.v(TAG,"Permission: "+permissions[0]+ "was "+grantResults[0]);
-//            //resume tasks needing this permission
-//        }
-//    }
 }
